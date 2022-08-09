@@ -1,10 +1,8 @@
 tasks:
   Produce:
     shell: python producer.py
-    #robotTaskName: Produce items
   Consume:
     shell: python consumer.py
-    #robotTaskName: Consume items
 
 artifactsDir: output
 condaConfigFile: conda.yaml

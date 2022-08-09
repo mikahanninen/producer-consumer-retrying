@@ -1,6 +1,11 @@
-# Template for producer-consumer model robots using work items
+# Python producer-consumer model robots using work items
 
-This template contains a working robot implementation that has the basic structure where one part produces work items from input and another part that consumes those work items. 
+This contains a working Python robot implementation that has the basic structure where one part produces work items from input and another part that consumes those work items.
+
+The consumer part demonstrates business model where business logic is divided into 3 actions.
+
+The consumer work item has been meant to be rerun until work item ultimately would pass. Only failing actions should
+be rerun. For example if consumer failing in actions 1 and 3, then on rerun the action 2 would not be run again.
 
 > The [producer-consumer](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem) model is not limited to two steps, it can continue so that the consumer generates further work items for the next step and so on.
 
@@ -8,9 +13,7 @@ The template tries to keep the amount of functional code at a minimum so you hav
 
 > We recommended checking out the article "[Using work items](https://robocorp.com/docs/development-guide/control-room/work-items)" before diving in.
 
-
 > Also a fully functional example robot can be found at: [Web Store Order Processor Using Work Items](https://robocorp.com/portal/robot/robocorp/example-web-store-work-items)
-
 
 ## Tasks
 
@@ -24,11 +27,6 @@ The robot is split into two tasks, meant to run as separate steps in Control Roo
 ### The second task (the consumer)
 
 > We recommended checking out the article "[Work item exception handling](https://robocorp.com/docs/development-guide/control-room/work-items#work-item-exception-handling)" before diving in.
-
-- A simulated "Login" step.
-  - This simulates random failures to highlight the use of `APPLICATION` -exception type.
-- Loop that handles the work items and just creates a logs row for each
-  - This simulates random failures to highlight the use of `BUSINESS` -exception type.
 
 ### Local testing
 

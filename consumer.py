@@ -1,65 +1,77 @@
-from RPA.Excel.Files import Files
-from RPA.Robocorp.WorkItems import WorkItems
-from RPA.Tables import Tables
+from RPA.Robocorp.WorkItems import WorkItems, State, Error
+from random import randint
 
 WORKITEMS = WorkItems()
 
 
 def create_new_status_dict():
     return {
-        "step1": False,
-        "step2": False,
-        "step3": False,
+        "action1": False,
+        "action2": False,
+        "action3": False,
     }
 
 
-def update_workitem(status_dict):
-    WORKITEMS.set_work_item_variable("Status", status_dict)
-    WORKITEMS.save_work_item()
-
-
 def handle_item():
-    status_dict = create_new_status_dict()
     variables = WORKITEMS.get_work_item_variables()
-    all_pass = (
-        False if "Status" not in variables.keys() else all(variables["Status"].values())
-    )
-    if all_pass:
-
-        print("Work item has been successfully executed")
+    all_pass = False
+    # on first consumer run the status information is not (in this example)
+    # part of the work item variables - structure is initialized if not present
+    if "status" not in variables.keys():
+        variables["status"] = create_new_status_dict()
     else:
-        print("Work item needs to be processed")
-        process_item(variables, status_dict)
+        # status structure is present - check if all steps are completed
+        all_pass = all(variables["status"].values())
 
-    print(variables)
-    update_workitem(status_dict)
+    if not all_pass:
+        # not all steps are completed - process item
+        process_item(variables)
+
+    all_pass = all(variables["status"].values())
+    # save status information into the work item
+    WORKITEMS.save_work_item()
+    if all_pass:
+        # all actions are completed - release work item
+        WORKITEMS.release_input_work_item(State.DONE)
+    else:
+        # not all actions are completed - mark work item as failed
+        failures = [
+            key for key in variables["status"].keys() if not variables["status"][key]
+        ]
+        error_msg = f"{variables['Name']} - {variables['Item']}: business errors: {','.join(failures)}"
+        WORKITEMS.release_input_work_item(
+            State.FAILED, Error.BUSINESS, message=error_msg
+        )
 
 
-def process_item(variables, status_dict):
+def process_item(variables):
     print("Processing item")
-    step1(variables, status_dict)
-    step2(variables, status_dict)
-    step3(variables, status_dict)
+    _business_block("action1", variables)
+    _business_block("action2", variables)
+    _business_block("action3", variables)
 
 
-def step1(variables, status_dict):
-    status_dict["step1"] = True
-
-
-def step2(variables, status_dict):
-    status_dict["step2"] = True
-
-
-def step3(variables, status_dict):
-    status_dict["step3"] = True
+def _business_block(action_name, variables):
+    if variables["status"][action_name]:
+        print(f"{action_name} ALREADY completed")
+        return
+    # simulating success / error with business logic
+    variables["status"][action_name] = False if randint(1, 4) == 4 else True
+    if variables["status"][action_name]:
+        print(f"{action_name} COMPLETED")
+    else:
+        print(f"{action_name} still NOT completed")
 
 
 def main():
     try:
+        WORKITEMS.get_input_work_item()
         WORKITEMS.for_each_input_work_item(handle_item)
     except Exception as err:
         WORKITEMS.release_input_work_item(
-            state="failed", exception_type="application", message="I failed"
+            state=State.FAILED,
+            exception_type=Error.APPLICATION,
+            message="I failed",
         )
     pass
 
