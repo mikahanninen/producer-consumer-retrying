@@ -56,6 +56,8 @@ def _business_block(action_name, variables):
         print(f"{action_name} ALREADY completed")
         return
     # simulating success / error with business logic
+    # one option here is to wrap actual business logic within try/except block
+    # to mark status True/False
     variables["status"][action_name] = False if randint(1, 4) == 4 else True
     if variables["status"][action_name]:
         print(f"{action_name} COMPLETED")
